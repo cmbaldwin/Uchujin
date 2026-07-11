@@ -49,4 +49,3 @@ class QueryParserTest < ActiveSupport::TestCase
     assert_equal "RuntimeError", scope.first.class_name
   end
 end
-
