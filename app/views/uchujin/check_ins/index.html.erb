@@ -1,0 +1,48 @@
+<% content_for :title, "Check-ins" %>
+<h1>Check-ins</h1>
+
+<div class="panel">
+  <div class="panel-header"><h2>Registered heartbeats</h2></div>
+  <% if @check_ins.any? %>
+    <table class="table">
+      <thead><tr><th>Name</th><th>Expected every</th><th>Last seen</th><th>Pings</th><th>Status</th></tr></thead>
+      <tbody>
+        <% @check_ins.each do |c| %>
+          <tr>
+            <td class="mono"><%= c.name %></td>
+            <td class="muted"><%= c.expected_every_seconds ? "#{c.expected_every_seconds}s" : "—" %></td>
+            <td class="muted"><%= c.last_seen_at ? time_ago(c.last_seen_at) : "never" %></td>
+            <td><%= c.ping_count %></td>
+            <td>
+              <% if c.overdue? %>
+                <%= status_badge("down") %>
+              <% elsif c.last_seen_at %>
+                <%= status_badge("up") %>
+              <% else %>
+                <%= status_badge("unknown") %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty">No check-ins yet.</div>
+  <% end %>
+</div>
+
+<div class="panel">
+  <div class="panel-header"><h2>Register check-in</h2></div>
+  <div class="panel-body">
+    <%= form_with url: check_ins_path, scope: :check_in, local: true do |f| %>
+      <label class="muted" style="font-size:0.8rem">Name</label>
+      <input type="text" name="check_in[name]" placeholder="nightly-backup" required>
+      <label class="muted mt-1" style="font-size:0.8rem;display:block">Expected every (seconds)</label>
+      <input type="number" name="check_in[expected_every_seconds]" placeholder="86400">
+      <div class="mt-1"><button type="submit" class="btn btn-primary">Create</button></div>
+    <% end %>
+    <p class="muted mt-2" style="font-size:0.85rem">
+      Ping via API: <code class="mono">POST /uchujin/api/check_ins/:name/ping</code> with Bearer deploy token.
+    </p>
+  </div>
+</div>

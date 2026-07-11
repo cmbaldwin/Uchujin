@@ -1,0 +1,46 @@
+<% content_for :title, "Uptime" %>
+<h1>Uptime</h1>
+
+<div class="panel">
+  <div class="panel-header"><h2>Latest status by URL</h2></div>
+  <% if @latest.any? %>
+    <table class="table">
+      <thead><tr><th>URL</th><th>Status</th><th>Code</th><th>ms</th><th>Checked</th></tr></thead>
+      <tbody>
+        <% @latest.each do |url, check| %>
+          <tr>
+            <td class="mono"><%= url %></td>
+            <td><%= status_badge(check.status) %></td>
+            <td><%= check.status_code || "—" %></td>
+            <td><%= check.response_time_ms || "—" %></td>
+            <td class="muted"><%= time_ago(check.checked_at) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty">
+      No checks recorded.<br>
+      <span class="muted">Schedule <code>Uchujin::UptimeCheckJob.perform_later(["https://…"])</code> or set <code>UCHUJIN_UPTIME_URLS</code>.</span>
+    </div>
+  <% end %>
+</div>
+
+<div class="panel">
+  <div class="panel-header"><h2>Recent history</h2></div>
+  <% if @history.any? %>
+    <table class="table">
+      <thead><tr><th>When</th><th>URL</th><th>Status</th><th>Error</th></tr></thead>
+      <tbody>
+        <% @history.each do |check| %>
+          <tr>
+            <td class="muted"><%= check.checked_at %></td>
+            <td class="mono" style="font-size:0.8rem"><%= check.url %></td>
+            <td><%= status_badge(check.status) %></td>
+            <td class="muted"><%= truncate_message(check.error_message, 60) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

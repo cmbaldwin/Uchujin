@@ -1,0 +1,107 @@
+<% content_for :title, "Dashboard" %>
+<h1>Dashboard</h1>
+
+<div class="stats">
+  <div class="stat-card">
+    <div class="label">Unresolved</div>
+    <div class="value red"><%= @unresolved_count %></div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Occurrences (24h)</div>
+    <div class="value"><%= @occurrences_24h %></div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Resolved</div>
+    <div class="value green"><%= @resolved_count %></div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Ignored</div>
+    <div class="value"><%= @ignored_count %></div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <h2>Recent unresolved faults</h2>
+    <%= link_to "View all", faults_path(status: "unresolved"), class: "btn btn-sm" %>
+  </div>
+  <% if @recent_faults.any? %>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Error</th>
+          <th>Env</th>
+          <th>Count</th>
+          <th>Last seen</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @recent_faults.each do |fault| %>
+          <tr>
+            <td>
+              <%= link_to fault.class_name, fault_path(fault), class: "mono" %><br>
+              <span class="muted"><%= truncate_message(fault.message) %></span>
+            </td>
+            <td><span class="badge badge-blue"><%= fault.environment %></span></td>
+            <td><%= fault.occurrences_count %></td>
+            <td class="muted"><%= time_ago(fault.last_seen_at) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty">No unresolved faults. Quiet skies. 🌌</div>
+  <% end %>
+</div>
+
+<div class="two-col">
+  <div class="panel">
+    <div class="panel-header"><h2>Recent deploys</h2></div>
+    <% if @recent_deployments.any? %>
+      <table class="table">
+        <thead><tr><th>SHA</th><th>Env</th><th>When</th></tr></thead>
+        <tbody>
+          <% @recent_deployments.each do |d| %>
+            <tr>
+              <td><%= link_to d.short_sha, deployment_path(d), class: "mono" %></td>
+              <td><%= d.environment %></td>
+              <td class="muted"><%= time_ago(d.deployed_at) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <div class="empty">No deployments recorded yet.</div>
+    <% end %>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h2>Uptime</h2></div>
+    <% if @latest_uptime.any? %>
+      <table class="table">
+        <thead><tr><th>URL</th><th>Status</th></tr></thead>
+        <tbody>
+          <% @latest_uptime.each do |url, check| %>
+            <tr>
+              <td class="mono" style="max-width:180px;overflow:hidden;text-overflow:ellipsis"><%= url %></td>
+              <td><%= status_badge(check.status) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <div class="empty">No uptime checks yet.</div>
+    <% end %>
+
+    <% if @overdue_check_ins.any? %>
+      <div class="panel-body">
+        <strong style="color:var(--red)">Overdue check-ins</strong>
+        <ul>
+          <% @overdue_check_ins.each do |c| %>
+            <li class="mono"><%= c.name %> — last <%= time_ago(c.last_seen_at) %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Configure Rails Environment
 ENV["RAILS_ENV"] = "test"
 
@@ -10,6 +12,23 @@ require "rails/test_help"
 if ActiveSupport::TestCase.respond_to?(:fixture_paths=)
   ActiveSupport::TestCase.fixture_paths = [ File.expand_path("fixtures", __dir__) ]
   ActionDispatch::IntegrationTest.fixture_paths = ActiveSupport::TestCase.fixture_paths
-  ActiveSupport::TestCase.file_fixture_path = File.expand_path("fixtures", __dir__) + "/files"
+  ActiveSupport::TestCase.file_fixture_path = File.expand_path("fixtures/files", __dir__)
   ActiveSupport::TestCase.fixtures :all
+end
+
+module ActiveSupport
+  class TestCase
+    # Run tests in parallel with specified workers
+    # parallelize(workers: :number_of_processors)
+
+    setup do
+      Uchujin.reset_configuration!
+      Uchujin.configure do |config|
+        config.app_name = "Uchujin Test"
+        config.environments = %w[test development production]
+        config.deploy_token = "test-deploy-token"
+      end
+      ActiveJob::Base.queue_adapter = :test
+    end
+  end
 end

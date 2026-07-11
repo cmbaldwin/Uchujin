@@ -1,0 +1,32 @@
+<% content_for :title, "Deployments" %>
+<h1>Deployments</h1>
+
+<div class="panel">
+  <% if @deployments.any? %>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>SHA</th>
+          <th>Environment</th>
+          <th>User</th>
+          <th>Deployed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @deployments.each do |d| %>
+          <tr>
+            <td><%= link_to d.short_sha, deployment_path(d), class: "mono" %> <span class="muted mono" style="font-size:0.75rem"><%= d.sha %></span></td>
+            <td><span class="badge badge-blue"><%= d.environment %></span></td>
+            <td class="muted"><%= d.user.presence || "—" %></td>
+            <td class="muted"><%= d.deployed_at %> · <%= time_ago(d.deployed_at) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty">
+      No deployments yet.<br>
+      <span class="muted">POST /uchujin/api/deployments with Bearer token to record deploys.</span>
+    </div>
+  <% end %>
+</div>

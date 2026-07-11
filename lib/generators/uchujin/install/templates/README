@@ -1,0 +1,15 @@
+Uchujin installed.
+
+Next steps:
+  1. bundle exec rails db:migrate
+  2. Edit config/initializers/uchujin.rb (auth + notifications)
+  3. Visit /uchujin in your app
+
+Deploy hooks (optional):
+  POST /uchujin/api/deployments  with Authorization: Bearer $UCHUJIN_DEPLOY_TOKEN
+  Body: { "sha": "...", "environment": "production", "user": "kamal" }
+
+Check-ins (cron heartbeats):
+  POST /uchujin/api/check_ins/:name/ping
+
+Uptime monitoring: schedule Uchujin::UptimeCheckJob with URLs via recurring SolidQueue/cron.

@@ -1,0 +1,47 @@
+<% content_for :title, "Faults" %>
+<h1>Faults</h1>
+
+<%= form_with url: faults_path, method: :get, local: true, class: "search-bar" do %>
+  <input type="text" name="q" value="<%= @query %>" placeholder="Search: NoMethodError, is:unresolved, environment:production, tag:payments…">
+  <select name="status" style="width:auto">
+    <option value="">All statuses</option>
+    <% Uchujin::Fault::STATUSES.each do |s| %>
+      <option value="<%= s %>" <%= "selected" if params[:status] == s %>><%= s %></option>
+    <% end %>
+  </select>
+  <button type="submit" class="btn btn-primary">Search</button>
+<% end %>
+
+<div class="panel">
+  <% if @faults.any? %>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Error</th>
+          <th>Component</th>
+          <th>Env</th>
+          <th>Count</th>
+          <th>Last seen</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @faults.each do |fault| %>
+          <tr>
+            <td><%= status_badge(fault.status) %></td>
+            <td>
+              <%= link_to fault.class_name, fault_path(fault), class: "mono" %><br>
+              <span class="muted"><%= truncate_message(fault.message) %></span>
+            </td>
+            <td class="muted"><%= fault.component %></td>
+            <td><span class="badge badge-blue"><%= fault.environment %></span></td>
+            <td><%= fault.occurrences_count %></td>
+            <td class="muted"><%= time_ago(fault.last_seen_at) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty">No faults match your filters.</div>
+  <% end %>
+</div>

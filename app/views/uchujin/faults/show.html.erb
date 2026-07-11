@@ -1,0 +1,163 @@
+<% content_for :title, @fault.class_name %>
+
+<div class="flex justify-between items-center mb-1">
+  <div>
+    <div class="flex gap-1 items-center">
+      <%= status_badge(@fault.status) %>
+      <span class="badge badge-blue"><%= @fault.environment %></span>
+      <span class="badge badge-gray"><%= @fault.component %></span>
+    </div>
+    <h1 class="fault-title mt-1"><%= @fault.class_name %></h1>
+    <p class="fault-message"><%= @fault.message %></p>
+  </div>
+  <div class="btn-group">
+    <% if @fault.unresolved? %>
+      <%= button_to "Resolve", resolve_fault_path(@fault), method: :post, class: "btn btn-success" %>
+      <%= button_to "Ignore", ignore_fault_path(@fault), method: :post, class: "btn btn-danger" %>
+    <% else %>
+      <%= button_to "Reopen", reopen_fault_path(@fault), method: :post, class: "btn btn-primary" %>
+    <% end %>
+  </div>
+</div>
+
+<div class="stats" style="grid-template-columns: repeat(4, 1fr);">
+  <div class="stat-card"><div class="label">Occurrences</div><div class="value"><%= @fault.occurrences_count %></div></div>
+  <div class="stat-card"><div class="label">First seen</div><div class="value" style="font-size:0.95rem"><%= time_ago(@fault.first_seen_at) %></div></div>
+  <div class="stat-card"><div class="label">Last seen</div><div class="value" style="font-size:0.95rem"><%= time_ago(@fault.last_seen_at) %></div></div>
+  <div class="stat-card"><div class="label">24h</div><div class="value"><%= @fault.windowed_count %></div></div>
+</div>
+
+<div class="two-col">
+  <div>
+    <% if @occurrence %>
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Occurrence #<%= @occurrence.id %> · <%= @occurrence.occurred_at %></h2>
+        </div>
+        <div class="panel-body">
+          <h3 style="margin:0 0 0.5rem;font-size:0.9rem">Application stack</h3>
+          <div class="backtrace">
+<% Array(@occurrence.backtrace_app).each do |line| %><div class="app-frame"><%= line %></div>
+<% end %>
+<% if Array(@occurrence.backtrace_app).empty? %>
+<span class="muted">No application frames.</span>
+<% end %>
+          </div>
+
+          <% ctx = Array(@occurrence.source_context_lines).select { |f| f.is_a?(Hash) && Array(f["context"] || f[:context]).any? }.first(5) %>
+          <% if ctx.any? %>
+            <h3 class="mt-2" style="margin-bottom:0.5rem;font-size:0.9rem">Source context</h3>
+            <% ctx.each do |frame| %>
+              <div class="source-context">
+                <div class="frame-label mono"><%= frame["frame"] || frame[:frame] %></div>
+                <pre><% Array(frame["context"] || frame[:context]).each do |ln| %>
+<span class="line <%= 'highlight' if ln['highlight'] || ln[:highlight] %>"><span class="lineno"><%= ln['number'] || ln[:number] %></span><span><%= ln['code'] || ln[:code] %></span></span>
+<% end %></pre>
+              </div>
+            <% end %>
+          <% end %>
+
+          <h3 class="mt-2" style="margin-bottom:0.5rem;font-size:0.9rem">Full backtrace</h3>
+          <div class="backtrace">
+<% Array(@occurrence.backtrace).each do |line| %><div class="<%= line.to_s.include?('[PROJECT_ROOT]') ? 'app-frame' : 'gem-frame' %>"><%= line %></div>
+<% end %>
+          </div>
+
+          <% if Array(@occurrence.breadcrumbs).any? %>
+            <h3 class="mt-2" style="margin-bottom:0.5rem;font-size:0.9rem">Breadcrumbs</h3>
+            <ul class="breadcrumb-list">
+              <% Array(@occurrence.breadcrumbs).each do |b| %>
+                <li>
+                  <span class="rel"><%= b['relative_ms'] || b[:relative_ms] %>ms</span>
+                  <span class="type"><%= b['type'] || b[:type] %></span>
+                  <span><%= b['message'] || b[:message] %></span>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+      </div>
+    <% else %>
+      <div class="panel"><div class="empty">No occurrences recorded.</div></div>
+    <% end %>
+
+    <div class="panel">
+      <div class="panel-header"><h2>Comments</h2></div>
+      <div class="panel-body">
+        <% @comments.each do |comment| %>
+          <div class="comment">
+            <div class="meta"><strong><%= comment.author_name.presence || "anonymous" %></strong> · <%= time_ago(comment.created_at) %></div>
+            <div class="body"><%= comment.body %></div>
+          </div>
+        <% end %>
+        <%= form_with model: @comment, url: fault_comments_path(@fault), local: true, class: "mt-2" do |f| %>
+          <%= f.text_area :body, placeholder: "Add a note…", rows: 3 %>
+          <div class="mt-1"><%= f.submit "Comment", class: "btn btn-primary" %></div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <div class="panel-header"><h2>Details</h2></div>
+      <div class="panel-body">
+        <dl class="kv">
+          <dt>Fingerprint</dt><dd class="mono" style="font-size:0.7rem"><%= @fault.fingerprint[0,16] %>…</dd>
+          <dt>Revision</dt><dd class="mono"><%= @fault.revision.presence || "—" %></dd>
+          <dt>Assignee</dt><dd><%= @fault.assignee_id || "—" %></dd>
+          <dt>Tags</dt><dd><%= @fault.tag_list.join(", ").presence || "—" %></dd>
+        </dl>
+
+        <%= form_with model: @fault, url: fault_path(@fault), method: :patch, local: true, class: "mt-2" do |f| %>
+          <label class="muted" style="font-size:0.8rem">Tags (comma-separated)</label>
+          <input type="text" name="fault[tags]" value="<%= @fault.tag_list.join(', ') %>">
+          <label class="muted mt-1" style="font-size:0.8rem;display:block">Assignee ID</label>
+          <input type="text" name="fault[assignee_id]" value="<%= @fault.assignee_id %>">
+          <div class="mt-1"><button type="submit" class="btn btn-sm">Update</button></div>
+        <% end %>
+      </div>
+    </div>
+
+    <% if @occurrence %>
+      <div class="panel">
+        <div class="panel-header"><h2>Request</h2></div>
+        <div class="panel-body">
+          <dl class="kv">
+            <% meta = @occurrence.request_metadata || {} %>
+            <dt>URL</dt><dd class="mono" style="font-size:0.75rem"><%= meta['url'] || meta[:url] || "—" %></dd>
+            <dt>Method</dt><dd><%= meta['method'] || meta[:method] || "—" %></dd>
+            <dt>Controller</dt><dd class="mono"><%= [meta['controller'] || meta[:controller], meta['action'] || meta[:action]].compact.join("#") %></dd>
+            <% client = @occurrence.client_info || {} %>
+            <dt>IP</dt><dd class="mono"><%= client['ip'] || client[:ip] || "—" %></dd>
+            <dt>User-Agent</dt><dd style="font-size:0.75rem"><%= truncate_message(client['user_agent'] || client[:user_agent], 80) %></dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h2>Server</h2></div>
+        <div class="panel-body">
+          <dl class="kv">
+            <% stats = @occurrence.server_stats || {} %>
+            <dt>Host</dt><dd class="mono"><%= stats['hostname'] || stats[:hostname] %></dd>
+            <dt>PID</dt><dd><%= stats['pid'] || stats[:pid] %></dd>
+            <dt>Ruby / Rails</dt><dd><%= stats['ruby'] || stats[:ruby] %> / <%= stats['rails'] || stats[:rails] %></dd>
+            <dt>RAM</dt><dd><%= stats['ram_mb'] || stats[:ram_mb] %> MB</dd>
+          </dl>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="panel">
+      <div class="panel-header"><h2>Occurrences</h2></div>
+      <div class="occurrence-list">
+        <% @occurrences.each do |occ| %>
+          <%= link_to fault_path(@fault, occurrence_id: occ.id), class: (occ.id == @occurrence&.id ? "active" : nil) do %>
+            #<%= occ.id %> · <%= occ.occurred_at&.strftime("%Y-%m-%d %H:%M:%S") %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

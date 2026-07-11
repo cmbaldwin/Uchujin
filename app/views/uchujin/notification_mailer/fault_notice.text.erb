@@ -1,0 +1,11 @@
+<%= @app_name %> — new fault
+
+<%= @fault.class_name %>
+<%= @fault.message %>
+
+Environment: <%= @fault.environment %>
+Component: <%= @fault.component %>
+Occurrences: <%= @fault.occurrences_count %>
+Last seen: <%= @fault.last_seen_at %>
+
+Open /uchujin/faults/<%= @fault.id %>

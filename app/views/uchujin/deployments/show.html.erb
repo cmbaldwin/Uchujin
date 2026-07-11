@@ -1,0 +1,24 @@
+<% content_for :title, "Deploy #{@deployment.short_sha}" %>
+<h1 class="mono"><%= @deployment.short_sha %></h1>
+<p class="muted"><%= @deployment.environment %> · <%= @deployment.deployed_at %> · by <%= @deployment.user.presence || "unknown" %></p>
+
+<div class="panel">
+  <div class="panel-header"><h2>Faults first seen near this deploy</h2></div>
+  <% if @faults.any? %>
+    <table class="table">
+      <thead><tr><th>Status</th><th>Error</th><th>Count</th><th>First seen</th></tr></thead>
+      <tbody>
+        <% @faults.each do |fault| %>
+          <tr>
+            <td><%= status_badge(fault.status) %></td>
+            <td><%= link_to fault.class_name, fault_path(fault), class: "mono" %></td>
+            <td><%= fault.occurrences_count %></td>
+            <td class="muted"><%= fault.first_seen_at %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty">No new faults in the deploy window.</div>
+  <% end %>
+</div>

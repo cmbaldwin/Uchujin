@@ -1,17 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Uchujin</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= content_for?(:title) ? yield(:title) : Uchujin.configuration.app_name %> · Uchujin</title>
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
-
-  <%= yield :head %>
-
-  <%= stylesheet_link_tag    "uchujin/application", media: "all" %>
+  <style><%= raw File.read(Uchujin::Engine.root.join("app/assets/stylesheets/uchujin/application.css")) rescue "" %></style>
 </head>
-<body>
+<body class="uchujin">
+  <nav class="uchujin-nav">
+    <a href="<%= root_path %>" class="brand"><span>宇</span> <%= Uchujin.configuration.app_name %></a>
+    <a href="<%= root_path %>" class="<%= 'active' if controller_name == 'dashboard' %>">Dashboard</a>
+    <a href="<%= faults_path %>" class="<%= 'active' if controller_name == 'faults' %>">Faults</a>
+    <a href="<%= deployments_path %>" class="<%= 'active' if controller_name == 'deployments' %>">Deploys</a>
+    <a href="<%= uptime_checks_path %>" class="<%= 'active' if controller_name == 'uptime_checks' %>">Uptime</a>
+    <a href="<%= check_ins_path %>" class="<%= 'active' if controller_name == 'check_ins' %>">Check-ins</a>
+    <div class="spacer"></div>
+    <span class="muted" style="font-size:0.8rem"><%= Rails.env %></span>
+  </nav>
 
-<%= yield %>
+  <div class="container">
+    <% if notice.present? %>
+      <div class="flash flash-notice"><%= notice %></div>
+    <% end %>
+    <% if alert.present? %>
+      <div class="flash flash-alert"><%= alert %></div>
+    <% end %>
 
+    <%= yield %>
+  </div>
 </body>
 </html>

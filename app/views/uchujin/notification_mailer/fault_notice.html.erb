@@ -1,0 +1,10 @@
+<h2 style="margin:0 0 0.5rem;"><%= @app_name %> — new fault</h2>
+<p><strong><%= @fault.class_name %></strong></p>
+<p><%= @fault.message %></p>
+<ul>
+  <li>Environment: <%= @fault.environment %></li>
+  <li>Component: <%= @fault.component %></li>
+  <li>Occurrences: <%= @fault.occurrences_count %></li>
+  <li>Last seen: <%= @fault.last_seen_at %></li>
+</ul>
+<p style="color:#666;font-size:0.9rem;">Open your app at /uchujin/faults/<%= @fault.id %> to inspect.</p>
