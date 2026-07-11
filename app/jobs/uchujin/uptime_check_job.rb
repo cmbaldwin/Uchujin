@@ -5,7 +5,7 @@ require "uri"
 
 module Uchujin
   class UptimeCheckJob < ApplicationJob
-    queue_as :uchujin
+    queue_as { Uchujin.configuration.queue_name }
 
     # urls: array of URL strings to probe
     def perform(urls = nil)
@@ -16,7 +16,6 @@ module Uchujin
     private
 
     def default_urls
-      # Host can set via ENV; empty means no-op
       ENV.fetch("UCHUJIN_UPTIME_URLS", "").split(",").map(&:strip).reject(&:blank?)
     end
 

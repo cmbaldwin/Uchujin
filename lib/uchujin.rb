@@ -9,7 +9,10 @@ module Uchujin
     def notify(exception, context: {}, request: nil, component: "web", env: nil)
       return unless enabled?
       return if ignored?(exception)
+      # Prevent double capture (middleware + ErrorSubscriber) and recursive notify
+      return if Thread.current[:uchujin_notifying]
 
+      Thread.current[:uchujin_notifying] = true
       notice = {
         class_name: exception.class.name,
         message: exception.message.to_s.truncate(5000),
@@ -31,6 +34,8 @@ module Uchujin
     rescue => e
       # Never let Uchujin take down the host.
       warn "[Uchujin] failed to enqueue notice: #{e.class}: #{e.message}"
+    ensure
+      Thread.current[:uchujin_notifying] = false
     end
 
     def enabled?

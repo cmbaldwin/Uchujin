@@ -12,7 +12,15 @@ module Uchujin
 
     def run_host_authentication
       auth = Uchujin.configuration.authenticate_with
-      return if auth.nil?
+      if auth.nil?
+        # Fail closed in production so a forgotten initializer never exposes the UI.
+        if Rails.env.production?
+          render plain: "Uchujin authentication is not configured. " \
+                        "Set config.authenticate in config/initializers/uchujin.rb",
+                 status: :forbidden
+        end
+        return
+      end
 
       if auth.arity == 1
         instance_exec(self, &auth)
