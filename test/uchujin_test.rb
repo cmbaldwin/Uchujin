@@ -55,4 +55,3 @@ class UchujinTest < ActiveSupport::TestCase
     assert_equal :default, Uchujin.configuration.queue_name
   end
 end
-

@@ -15,8 +15,6 @@ Uchujin.configure do |config|
   # config.environments = %w[production staging]
   # config.notification_email = "ops@example.com"   # To:
   # config.mailer_from = "noreply@example.com"     # From: (SPF-friendly)
-  # config.slack_webhook_url = ENV["UCHUJIN_SLACK_WEBHOOK"]
-  # config.webhook_url = ENV["UCHUJIN_WEBHOOK"]
   # config.deploy_token = ENV["UCHUJIN_DEPLOY_TOKEN"]
   # config.revision = ENV["GIT_REVISION"] || ENV["KAMAL_VERSION"]
   # config.queue_name = :default  # must be processed by your ActiveJob backend

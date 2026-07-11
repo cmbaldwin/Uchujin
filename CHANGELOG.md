@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Breaking:** remove Slack and generic webhook notification paths (`slack_webhook_url`, `webhook_url`). Host integrations weren't using them; email notifications are unaffected.
+
 ## 0.1.1 — 2026-07-11
 
 Production hardening before first host integration:
