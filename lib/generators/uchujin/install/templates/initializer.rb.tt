@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 Uchujin.configure do |config|
-  # Required: gate the admin UI with your host app's auth.
+  # Required in production: UI fails closed (403) if this is unset.
   # config.authenticate do
-  #   authenticate_user! # Devise example
+  #   authenticate_user! # Devise example — prefer admin-only in host routes too
   # end
 
   # Optional: who is the current user (for comments / assignees).
@@ -13,11 +13,13 @@ Uchujin.configure do |config|
 
   # config.app_name = "My App Errors"
   # config.environments = %w[production staging]
-  # config.notification_email = "ops@example.com"
+  # config.notification_email = "ops@example.com"   # To:
+  # config.mailer_from = "noreply@example.com"     # From: (SPF-friendly)
   # config.slack_webhook_url = ENV["UCHUJIN_SLACK_WEBHOOK"]
   # config.webhook_url = ENV["UCHUJIN_WEBHOOK"]
   # config.deploy_token = ENV["UCHUJIN_DEPLOY_TOKEN"]
   # config.revision = ENV["GIT_REVISION"] || ENV["KAMAL_VERSION"]
+  # config.queue_name = :default  # must be processed by your ActiveJob backend
 
   # Retention (schedule Uchujin::PruneJob daily if pruning_enabled)
   # config.pruning_enabled = true

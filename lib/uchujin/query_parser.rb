@@ -55,11 +55,12 @@ module Uchujin
           scope
         end
       when "tag"
-        # JSON array containment — portable enough for sqlite/pg json
+        # Cast JSON to text so LIKE works on both SQLite and PostgreSQL
+        pattern = "%\"#{sanitize_like(token.value)}\"%"
         if token.negated
-          scope.where.not("tags LIKE ?", "%\"#{sanitize_like(token.value)}\"%")
+          scope.where.not("CAST(tags AS TEXT) LIKE ?", pattern)
         else
-          scope.where("tags LIKE ?", "%\"#{sanitize_like(token.value)}\"%")
+          scope.where("CAST(tags AS TEXT) LIKE ?", pattern)
         end
       when "environment"
         token.negated ? scope.where.not(environment: token.value) : scope.where(environment: token.value)

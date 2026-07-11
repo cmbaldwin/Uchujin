@@ -42,4 +42,11 @@ class QueryParserTest < ActiveSupport::TestCase
     scope = Uchujin::QueryParser.new("payment").apply(Uchujin::Fault.all)
     assert_equal 1, scope.count
   end
+
+  test "filters by tag" do
+    scope = Uchujin::QueryParser.new("tag:payments").apply(Uchujin::Fault.all)
+    assert_equal 1, scope.count
+    assert_equal "RuntimeError", scope.first.class_name
+  end
 end
+

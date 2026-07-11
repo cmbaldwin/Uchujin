@@ -6,6 +6,8 @@ module Uchujin
     def report(error, handled:, severity:, context:, source: nil)
       return if handled && severity == :info
       return unless Uchujin.configuration.environments.map(&:to_s).include?(Rails.env.to_s)
+      return if Thread.current[:uchujin_notifying]
+      return if error.backtrace&.any? { |line| line.include?("/uchujin/") || line.include?("Uchujin::") }
 
       Uchujin.notify(
         error,

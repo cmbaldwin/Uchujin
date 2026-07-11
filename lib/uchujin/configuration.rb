@@ -26,10 +26,14 @@ module Uchujin
 
     # Notifications
     attr_accessor :notification_email
+    attr_accessor :mailer_from
     attr_accessor :slack_webhook_url
     attr_accessor :webhook_url
     attr_accessor :notify_on_every_occurrence
     attr_accessor :notification_rate_limit
+
+    # Jobs
+    attr_accessor :queue_name
 
     # UI
     attr_accessor :app_name
@@ -50,6 +54,8 @@ module Uchujin
       @deploy_token = ENV["UCHUJIN_DEPLOY_TOKEN"]
       @notify_on_every_occurrence = false
       @notification_rate_limit = 5.minutes
+      @queue_name = :default
+      @mailer_from = ENV["UCHUJIN_MAILER_FROM"] || "uchujin@localhost"
       @app_name = "Uchujin"
     end
 

@@ -71,13 +71,7 @@ module Uchujin
       end
     end
 
-    # Make gem migrations available to host apps that prefer rake over the generator.
-    initializer "uchujin.append_migrations" do |app|
-      unless app.root.to_s.start_with?(root.to_s)
-        config.paths["db/migrate"].expanded.each do |expanded_path|
-          app.config.paths["db/migrate"] << expanded_path
-        end
-      end
-    end
+    # Migrations are installed only via `rails generate uchujin:install`.
+    # Do not append engine db/migrate — that double-runs CreateUchujinTables.
   end
 end

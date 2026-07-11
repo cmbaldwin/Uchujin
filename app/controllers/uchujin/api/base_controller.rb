@@ -16,10 +16,22 @@ module Uchujin
         end
 
         provided = request.headers["Authorization"].to_s.sub(/\ABearer\s+/i, "")
-        provided = params[:token].to_s if provided.blank?
-        unless ActiveSupport::SecurityUtils.secure_compare(provided.to_s, token.to_s)
+        # Prefer Authorization header; query token accepted only outside production
+        # to avoid leaking secrets via access logs / referrers.
+        if provided.blank? && !Rails.env.production?
+          provided = params[:token].to_s
+        end
+
+        unless secure_token_match?(provided, token)
           render json: { error: "unauthorized" }, status: :unauthorized
         end
+      end
+
+      def secure_token_match?(provided, expected)
+        return false if provided.blank? || expected.blank?
+        ActiveSupport::SecurityUtils.secure_compare(provided.to_s, expected.to_s)
+      rescue ArgumentError
+        false
       end
     end
   end

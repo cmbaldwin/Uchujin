@@ -43,4 +43,16 @@ class UchujinTest < ActiveSupport::TestCase
     assert_equal "42", Uchujin.context["user_id"].to_s
     assert_equal 1, Uchujin::Breadcrumbs.current.size
   end
+
+  test "notify clears reentrancy flag after each call" do
+    assert_enqueued_jobs 2, only: Uchujin::ProcessNoticeJob do
+      Uchujin.notify(RuntimeError.new("first"))
+      Uchujin.notify(RuntimeError.new("second"))
+    end
+  end
+
+  test "default queue name is default" do
+    assert_equal :default, Uchujin.configuration.queue_name
+  end
 end
+
