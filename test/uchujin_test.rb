@@ -51,8 +51,26 @@ class UchujinTest < ActiveSupport::TestCase
     end
   end
 
+  test "notify does not double-capture the same exception object" do
+    # Simulates one unhandled exception reaching Uchujin.notify via two capture
+    # paths (e.g. ErrorCatcher middleware + Rails.error subscriber).
+    exception = RuntimeError.new("reported twice")
+
+    assert_enqueued_jobs 1, only: Uchujin::ProcessNoticeJob do
+      Uchujin.notify(exception)
+      Uchujin.notify(exception)
+    end
+  end
+
+  test "notify captures a new exception object even with the same message" do
+    # Retried jobs raise a NEW exception object per attempt; that must still enqueue.
+    assert_enqueued_jobs 2, only: Uchujin::ProcessNoticeJob do
+      Uchujin.notify(RuntimeError.new("same message"))
+      Uchujin.notify(RuntimeError.new("same message"))
+    end
+  end
+
   test "default queue name is default" do
     assert_equal :default, Uchujin.configuration.queue_name
   end
 end
-
