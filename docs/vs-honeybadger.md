@@ -83,9 +83,8 @@ Uchujin.configure do |config|
   config.app_name = "My App"
   config.environments = %w[production staging] # skip test by default in library defaults
 
-  # Replaces HB project alerts (email / Slack)
+  # Replaces HB project alerts (email)
   config.notification_email = ENV["UCHUJIN_NOTIFY_EMAIL"]
-  config.slack_webhook_url = ENV["UCHUJIN_SLACK_WEBHOOK"]
 
   # Replaces HB deploy API key usage for your hooks
   config.deploy_token = ENV["UCHUJIN_DEPLOY_TOKEN"]
@@ -265,14 +264,12 @@ Results live in `/uchujin/uptime_checks`. This is simple HTTP GET status — not
 
 | Honeybadger | Uchujin |
 |-------------|---------|
-| Project → Alerts (email, Slack, PagerDuty, …) | `notification_email`, `slack_webhook_url`, `webhook_url` |
+| Project → Alerts (email, Slack, PagerDuty, …) | `notification_email` |
 | Smart throttle in product | `notification_rate_limit` (default 5 minutes per fault) |
 | Per-env / per-error rules | Rate limit + ignore list + resolve/ignore in UI |
 
 ```ruby
 config.notification_email = "ops@example.com"
-config.slack_webhook_url = ENV["UCHUJIN_SLACK_WEBHOOK"]
-config.webhook_url = ENV["UCHUJIN_WEBHOOK"]       # generic JSON POST
 config.notify_on_every_occurrence = false
 config.notification_rate_limit = 5.minutes
 ```
@@ -311,7 +308,7 @@ Run both for a week so you do not drop coverage:
 1. Install Uchujin (migrate, auth, mount).
 2. Keep `Honeybadger.notify` paths; also call `Uchujin.notify` only where you notify manually — **or** rely on both auto-capture stacks (middleware may double-capture unhandled errors into both systems; that is usually fine during transition).
 3. Compare fault counts in `/uchujin` vs HB.
-4. Point Slack/email at Uchujin; disable HB alerts.
+4. Point email alerts at Uchujin; disable HB alerts.
 5. Remove the honeybadger gem and API key.
 
 For **only** unhandled exceptions, both gems’ middleware can coexist; you will see the same exception in both UIs until you remove one.
@@ -345,7 +342,7 @@ Uchujin::PruneJob.perform_later
 - [ ] `config.authenticate` so `/uchujin` is not public
 - [ ] ActiveJob worker running in production
 - [ ] `config.environments` matches where you want capture
-- [ ] Optional: Slack/email notify
+- [ ] Optional: email notify
 - [ ] Optional: deploy hook with `UCHUJIN_DEPLOY_TOKEN`
 - [ ] Optional: check-in pings for cron jobs
 - [ ] Optional: uptime job + prune job on a schedule
@@ -363,7 +360,7 @@ Uchujin.leave_breadcrumb("step", type: "custom", metadata: {})
 
 # Config keys of interest
 # authenticate, current_user_method, environments, ignored_exceptions,
-# notification_email, slack_webhook_url, webhook_url, deploy_token,
+# notification_email, deploy_token,
 # revision, pruning_enabled, retention_period, notification_rate_limit
 ```
 

@@ -27,8 +27,6 @@ module Uchujin
     # Notifications
     attr_accessor :notification_email
     attr_accessor :mailer_from
-    attr_accessor :slack_webhook_url
-    attr_accessor :webhook_url
     attr_accessor :notify_on_every_occurrence
     attr_accessor :notification_rate_limit
 

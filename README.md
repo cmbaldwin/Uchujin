@@ -18,7 +18,7 @@ No SaaS. No API key. Errors stay in **your** database.
 | Group by fingerprint (class + app stack + component) | Yes |
 | Dashboard on the same app (`/uchujin`) | Yes |
 | Auth via Devise / your admins | Yes |
-| Email / Slack when something new blows up | Yes |
+| Email when something new blows up | Yes |
 | Deploy markers + cron heartbeats | Yes |
 | Multi-app org console / hosted APM | No — use Honeybadger or similar |
 
@@ -31,7 +31,7 @@ No SaaS. No API key. Errors stay in **your** database.
 - **Occurrences** — full backtrace, source context, breadcrumbs, request/params, server stats
 - **Admin UI** at `/uchujin` — dashboard, search (`is:unresolved environment:production`), resolve/ignore, comments
 - **Host auth** — you wire `authenticate_user!`; Uchujin does not ship users
-- **Notifications** — email, Slack webhook, generic webhook (rate-limited)
+- **Notifications** — email (rate-limited)
 - **Deploy tracking** — `POST /uchujin/api/deployments` (Bearer token)
 - **Uptime checks** — `Uchujin::UptimeCheckJob`
 - **Cron check-ins** — heartbeat pings with overdue detection
@@ -82,7 +82,6 @@ Uchujin.configure do |config|
   config.environments = %w[production staging]
 
   config.notification_email = "ops@example.com"
-  config.slack_webhook_url = ENV["UCHUJIN_SLACK_WEBHOOK"]
   config.deploy_token = ENV["UCHUJIN_DEPLOY_TOKEN"]
   config.revision = ENV["KAMAL_VERSION"] || ENV["GIT_REVISION"]
 end
@@ -170,8 +169,6 @@ Uchujin::PruneJob.perform_later
 | `revision` | `GIT_REVISION` / Kamal / Heroku env | Attach to faults |
 | `deploy_token` | `UCHUJIN_DEPLOY_TOKEN` | API Bearer for deploys & check-ins |
 | `notification_email` | nil | Mailer recipient |
-| `slack_webhook_url` | nil | Slack incoming webhook |
-| `webhook_url` | nil | Generic JSON POST |
 | `notify_on_every_occurrence` | false | If true, skip “resolved only / rate limit” quieting |
 | `notification_rate_limit` | 5 minutes | Per-fault notify throttle |
 | `pruning_enabled` | false | Allow `PruneJob` to delete |
@@ -189,11 +186,11 @@ Exception
   → Uchujin.notify (build notice Hash)
   → ProcessNoticeJob (ActiveJob)
   → Fault (fingerprint) + Occurrence rows
-  → Notifier (email / Slack / webhook, rate-limited)
+  → Notifier (email, rate-limited)
   → UI at /uchujin
 ```
 
-Nothing is sent to an external error SaaS for capture. Optional webhooks you configure are the only outbound notify path.
+Nothing is sent to an external error SaaS for capture.
 
 ---
 
