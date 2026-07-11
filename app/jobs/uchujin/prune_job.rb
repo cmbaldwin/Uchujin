@@ -12,6 +12,8 @@ module Uchujin
 
       Occurrence.where("occurred_at < ?", retention.ago).delete_all
 
+      Notification.where("created_at < ?", retention.ago).delete_all
+
       Fault.where(status: %w[resolved ignored])
            .where("COALESCE(resolved_at, updated_at) < ?", resolved_retention.ago)
            .find_each(&:destroy)

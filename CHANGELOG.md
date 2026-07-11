@@ -2,7 +2,13 @@
 
 ## Unreleased
 
+## 0.1.2 — 2026-07-12
+
+Found during host-integration audit:
+
 - **Breaking:** remove Slack and generic webhook notification paths (`slack_webhook_url`, `webhook_url`). Host integrations weren't using them; email notifications are unaffected.
+- Fix double occurrence capture: one unhandled exception could be reported twice (middleware + `Rails.error` subscriber for web; `around_perform` + `Rails.error` for jobs). `Uchujin.notify` now tags the exception object after the first report and short-circuits on a second call with the same object. Retried jobs raise new exception objects per attempt, so retries are still captured.
+- Fix `uchujin_notifications` rows never being pruned — `PruneJob` now deletes notifications older than `retention_period` alongside occurrences.
 
 ## 0.1.1 — 2026-07-11
 

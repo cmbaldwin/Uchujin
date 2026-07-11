@@ -11,6 +11,17 @@ module Uchujin
       return if ignored?(exception)
       # Prevent double capture (middleware + ErrorSubscriber) and recursive notify
       return if Thread.current[:uchujin_notifying]
+      # Prevent double capture of the SAME exception object via two capture paths
+      # for one failure (e.g. ErrorCatcher middleware + Rails.error subscriber for
+      # one unhandled web request, or around_perform + Rails.error for one job
+      # attempt). Retried jobs raise a NEW exception object per attempt, so retries
+      # are still captured — that's intended, not a bug this guard should block.
+      return if exception.instance_variable_defined?(:@__uchujin_reported__)
+      begin
+        exception.instance_variable_set(:@__uchujin_reported__, true)
+      rescue FrozenError
+        # frozen exception objects can't be tagged; accept possible double capture
+      end
 
       Thread.current[:uchujin_notifying] = true
       notice = {
