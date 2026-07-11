@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Expanded README and added [docs/vs-honeybadger.md](docs/vs-honeybadger.md) (Honeybadger drop-in comparison).
+
 ## 0.1.0 — 2026-07-11
 
 Initial public release.
