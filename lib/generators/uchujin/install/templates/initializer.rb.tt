@@ -19,6 +19,10 @@ Uchujin.configure do |config|
   # config.revision = ENV["GIT_REVISION"] || ENV["KAMAL_VERSION"]
   # config.queue_name = :default  # must be processed by your ActiveJob backend
 
+  # MCP — AI agent triage at POST /uchujin/api/mcp
+  # config.mcp_enabled = true
+  # config.mcp_token = ENV["UCHUJIN_MCP_TOKEN"]  # falls back to deploy_token if blank
+
   # Retention (schedule Uchujin::PruneJob daily if pruning_enabled)
   # config.pruning_enabled = true
   # config.retention_period = 90.days
