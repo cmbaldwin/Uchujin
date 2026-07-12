@@ -33,6 +33,7 @@ No SaaS. No API key. Errors stay in **your** database.
 - **Host auth** — you wire `authenticate_user!`; Uchujin does not ship users
 - **Notifications** — email (rate-limited)
 - **Deploy tracking** — `POST /uchujin/api/deployments` (Bearer token)
+- **MCP for AI agents** — full fault triage via JSON-RPC at `/uchujin/api/mcp`
 - **Uptime checks** — `Uchujin::UptimeCheckJob`
 - **Cron check-ins** — heartbeat pings with overdue detection
 - **Retention** — optional `Uchujin::PruneJob`
@@ -154,6 +155,50 @@ Uchujin::UptimeCheckJob.perform_later(["https://app.example.com/up"])
 Uchujin::PruneJob.perform_later
 ```
 
+### MCP (AI agent triage)
+
+Enable an MCP JSON-RPC endpoint so Claude / Cursor / any agent can triage faults:
+
+```ruby
+Uchujin.configure do |config|
+  config.mcp_enabled = true
+  config.mcp_token = ENV["UCHUJIN_MCP_TOKEN"] # or falls back to deploy_token
+end
+```
+
+```bash
+# List tools
+curl -sS -X POST https://app.example.com/uchujin/api/mcp \
+  -H "Authorization: Bearer $UCHUJIN_MCP_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+
+# Resolve a fault
+curl -sS -X POST https://app.example.com/uchujin/api/mcp \
+  -H "Authorization: Bearer $UCHUJIN_MCP_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"resolve_fault","arguments":{"fault_id":42}}}'
+```
+
+**Tools:** `stats`, `list_faults`, `search_faults`, `get_fault`, `list_occurrences`, `get_occurrence`, `resolve_fault`, `ignore_fault`, `reopen_fault`, `assign_fault`, `update_fault`, `add_comment`, `bulk_update_faults`, `delete_fault`, `list_deployments`, `record_deployment`, `list_check_ins`, `ping_check_in`, `list_uptime`.
+
+Example agent config (HTTP MCP / custom bridge):
+
+```json
+{
+  "mcpServers": {
+    "uchujin": {
+      "url": "https://app.example.com/uchujin/api/mcp",
+      "headers": {
+        "Authorization": "Bearer ${UCHUJIN_MCP_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+See [docs/MCP.md](docs/MCP.md) for the full tool reference and agent workflow.
+
 ---
 
 ## Configuration reference
@@ -175,6 +220,8 @@ Uchujin::PruneJob.perform_later
 | `retention_period` | 90 days | Old occurrences |
 | `resolved_retention_period` | 30 days | Resolved/ignored faults |
 | `app_name` | `"Uchujin"` | UI + email subject |
+| `mcp_enabled` | `false` (or `UCHUJIN_MCP_ENABLED=true`) | Expose `/uchujin/api/mcp` |
+| `mcp_token` | `UCHUJIN_MCP_TOKEN` | Bearer for MCP (falls back to `deploy_token`) |
 
 ---
 
@@ -199,6 +246,7 @@ Nothing is sent to an external error SaaS for capture.
 | Doc | Contents |
 |-----|----------|
 | [docs/vs-honeybadger.md](docs/vs-honeybadger.md) | Drop-in vs Honeybadger install, API map, dual-run, gaps |
+| [docs/MCP.md](docs/MCP.md) | AI agent MCP tools for full fault triage |
 | [CHANGELOG.md](CHANGELOG.md) | Releases |
 
 ---

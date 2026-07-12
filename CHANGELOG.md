@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.2.0 — 2026-07-12
+
+- **MCP server** for AI agents at `POST /uchujin/api/mcp` (JSON-RPC tools).
+  - Enable with `config.mcp_enabled = true` and `config.mcp_token` (falls back to `deploy_token`).
+  - Full triage tools: list/search/get faults & occurrences, resolve/ignore/reopen/assign/update/comment, bulk actions, delete, deploys, check-ins, uptime, stats.
+  - Docs: [docs/MCP.md](docs/MCP.md)
+
 ## 0.1.2 — 2026-07-12
 
 Found during host-integration audit:

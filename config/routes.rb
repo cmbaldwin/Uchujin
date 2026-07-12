@@ -19,5 +19,7 @@ Uchujin::Engine.routes.draw do
   namespace :api do
     resources :deployments, only: %i[create]
     post "check_ins/:name/ping", to: "check_ins#ping", as: :check_in_ping
+    # MCP JSON-RPC for AI agents (enable with config.mcp_enabled = true)
+    match "mcp", to: "mcp#handle", via: [ :get, :post ], as: :mcp
   end
 end

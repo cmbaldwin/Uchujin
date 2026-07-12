@@ -11,6 +11,7 @@ require "uchujin/middleware/error_catcher"
 require "uchujin/error_subscriber"
 require "uchujin/job_error_handling"
 require "uchujin/notifier"
+require "uchujin/mcp"
 
 module Uchujin
   class Engine < ::Rails::Engine

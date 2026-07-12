@@ -33,6 +33,10 @@ module Uchujin
     # Jobs
     attr_accessor :queue_name
 
+    # MCP (AI agent triage endpoint at POST /uchujin/api/mcp)
+    attr_accessor :mcp_enabled
+    attr_accessor :mcp_token
+
     # UI
     attr_accessor :app_name
 
@@ -54,7 +58,14 @@ module Uchujin
       @notification_rate_limit = 5.minutes
       @queue_name = :default
       @mailer_from = ENV["UCHUJIN_MAILER_FROM"] || "uchujin@localhost"
+      @mcp_enabled = ENV["UCHUJIN_MCP_ENABLED"] == "true"
+      @mcp_token = ENV["UCHUJIN_MCP_TOKEN"]
       @app_name = "Uchujin"
+    end
+
+    # Prefer dedicated MCP token; fall back to deploy token for single-secret hosts.
+    def effective_mcp_token
+      mcp_token.presence || deploy_token
     end
 
     def authenticate(&block)
