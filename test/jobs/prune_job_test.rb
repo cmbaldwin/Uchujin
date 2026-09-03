@@ -26,4 +26,27 @@ class PruneJobTest < ActiveJob::TestCase
 
     assert Uchujin::Notification.exists?(old.id)
   end
+
+  test "repairs drifted occurrences_count in one pass" do
+    Uchujin.configuration.pruning_enabled = true
+
+    fault = Uchujin::Fault.create!(
+      fingerprint: "c" * 64,
+      class_name: "RuntimeError",
+      message: "boom",
+      component: "web",
+      environment: "test",
+      status: "unresolved",
+      first_seen_at: Time.current,
+      last_seen_at: Time.current
+    )
+    2.times do
+      fault.occurrences.create!(occurred_at: Time.current, message: "boom")
+    end
+    Uchujin::Fault.where(id: fault.id).update_all(occurrences_count: 99)
+
+    Uchujin::PruneJob.perform_now
+
+    assert_equal 2, fault.reload.occurrences_count
+  end
 end

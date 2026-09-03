@@ -51,8 +51,10 @@ module Uchujin
 
       def bearer_token
         header = request.headers["Authorization"].to_s
-        return header.delete_prefix("Bearer ").strip if header.start_with?("Bearer ")
-        # Also accept X-Uchujin-Token
+        if header.match?(/\ABearer\s+/i)
+          token = header.sub(/\ABearer\s+/i, "").strip
+          return token if token.present?
+        end
         request.headers["X-Uchujin-Token"].presence
       end
 
