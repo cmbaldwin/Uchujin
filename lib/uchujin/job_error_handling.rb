@@ -7,6 +7,10 @@ module Uchujin
 
     included do
       around_perform do |job, block|
+        # Worker threads are reused: start each job with a clean buffer so the
+        # previous job's breadcrumbs/context don't leak into this job's notice.
+        Uchujin::Breadcrumbs.clear!
+        Uchujin::Context.clear!
         block.call
       rescue StandardError => exception
         unless job.class.name.to_s.start_with?("Uchujin::")

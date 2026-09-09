@@ -75,6 +75,22 @@ class McpApiTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "accepts lowercase bearer scheme like the deploy API" do
+    post api_mcp_path,
+         params: { jsonrpc: "2.0", id: 1, method: "ping" },
+         headers: { "Authorization" => "bearer mcp-secret" },
+         as: :json
+    assert_response :success
+  end
+
+  test "accepts X-Uchujin-Token header" do
+    post api_mcp_path,
+         params: { jsonrpc: "2.0", id: 1, method: "ping" },
+         headers: { "X-Uchujin-Token" => "mcp-secret" },
+         as: :json
+    assert_response :success
+  end
+
   private
 
   def auth_headers(token)

@@ -20,9 +20,11 @@ module Uchujin
 
       UptimeCheck.where("checked_at < ?", 30.days.ago).delete_all
 
-      Fault.find_each do |fault|
-        Fault.where(id: fault.id).update_all(occurrences_count: fault.occurrences.count)
-      end
+      # Repair counters drifted by delete_all above (single statement, no N+1).
+      Fault.update_all(
+        "occurrences_count = (SELECT COUNT(*) FROM uchujin_occurrences " \
+        "WHERE uchujin_occurrences.fault_id = uchujin_faults.id)"
+      )
     end
   end
 end
