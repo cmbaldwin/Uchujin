@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.2.1 — 2026-09-10
+
+- **Deps:** bump `rails` 8.1.3 → 8.1.3.1, `sqlite3` 2.9.5 → 2.9.6, GHA `actions/checkout` 6→7, `actions/cache` 4→6, `actions/upload-artifact` 4→7
+- **Spark audit fixes (5):** `check_ins` cadence sanitization (ignore non-numeric `expected_every_seconds`), `deployments` garbage `deployed_at` fallback to `Time.current`, MCP Bearer case-insensitive (keep `X-Uchujin-Token`), `PruneJob` single-SQL `occurrences_count` repair (remove N+1), `JobErrorHandling` clear breadcrumbs/context per job
+- **Docs:** add `docs/AUDIT-OX-2026-08.md`, `docs/SPARK-AUDIT-2026-09.md`, `docs/research/rails-error-trackers-2026.md`, and `docs/plans/001`–`006` (storm, locals, capture-hooks, dashboard, MCP, github-workflow) — plans remain docs-only, not yet implemented
+
 ## 0.2.0 — 2026-07-12
 
 - **MCP server** for AI agents at `POST /uchujin/api/mcp` (JSON-RPC tools).
