@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.2.2 — 2026-09-24
+
+- **Fix:** `NotificationMailer#fault_notice` now `squish`es the fault message before truncating it into the email subject. A fault message containing a newline (e.g. an HTML error page body) produced a multi-line subject that some providers (Resend) reject outright, silently dropping the alert.
+
 ## 0.2.1 — 2026-09-10
 
 - **Deps:** bump `rails` 8.1.3 → 8.1.3.1, `sqlite3` 2.9.5 → 2.9.6, GHA `actions/checkout` 6→7, `actions/cache` 4→6, `actions/upload-artifact` 4→7
